@@ -104,32 +104,53 @@ def predict_with_uncertainty(image_bytes, n_iterations=30):
         # Preprocess image
         img_array = preprocess_image(image_bytes)
         
-        # ✅ Perform Standard Prediction first (to verify model works)
+        # ✅ Perform Standard Prediction first
         print(f"🔄 Running standard prediction (training=False)...")
-        # Standard predict uses training=False, so BN layers use moving stats (safe)
         standard_pred = model.predict(img_array, verbose=0)[0]
-        print(f"   Standard Pred: {standard_pred}")
-        print(f"   Max Conf: {np.max(standard_pred):.4f} ({CLASS_NAMES[np.argmax(standard_pred)]})")
         
-        # Temporary: Use standard prediction repeated to simulate "no uncertainty" 
-        # just to prove the model works
-        mean_prediction = standard_pred
-        std_prediction = np.zeros_like(standard_pred) # No uncertainty for now
+        # ✅ MC DROPOUT FIX: SPLIT INFERENCE
+        # The Backbone (DenseNet + BN) MUST run in inference mode (training=False).
+        # The Head (Dense + Dropout) MUST run in training mode (training=True).
+        # We manually feed features through the head layers.
         
-        # SKIP MC DROPOUT FOR NOW TO DIAGNOSE
-        """
-        predictions = []
-        for i in range(n_iterations):
-            # training=True breaks BN with batch_size=1
-            pred = model(img_array, training=True)
-            predictions.append(pred.numpy())
+        print(f"🔄 Running MC Dropout via Split Inference (n={n_iterations})...")
         
-        predictions = np.array(predictions)
-        mean_prediction = np.mean(predictions, axis=0)[0]
-        std_prediction = np.std(predictions, axis=0)[0]
-        """
+        # 1. Extract features using the backbone (up to bn_1)
+        # We create a temporary model or just get the layer output function
+        feature_extractor = keras.Model(inputs=model.input, outputs=model.get_layer('bn_1').output)
+        features = feature_extractor(img_array, training=False) # Shape: (1, 1024)
         
-        # Get predicted class
+        # 2. Get Head Layers
+        head_layers = [
+            model.get_layer('dense_1'),
+            model.get_layer('bayesian_dropout_1'),
+            model.get_layer('dense_2'),
+            model.get_layer('bayesian_dropout_2'),
+            model.get_layer('dense_3'),
+            model.get_layer('bayesian_dropout_3'),
+            model.get_layer('output')
+        ]
+        
+        # 3. Replicate features for batch processing
+        # Features are constant for all iterations
+        batch_features = np.tile(features, (n_iterations, 1))
+        
+        # 4. Pass through head layers manually
+        x = batch_features
+        for layer in head_layers:
+            if 'dropout' in layer.name:
+                # Enable dropout!
+                x = layer(x, training=True)
+            else:
+                x = layer(x)
+                
+        mc_predictions = x.numpy()
+        
+        # Compute Bayesian statistics
+        mean_prediction = np.mean(mc_predictions, axis=0) # Shape: (5,)
+        std_prediction = np.std(mc_predictions, axis=0)   # Shape: (5,)
+        
+        # Get predicted class from Mean Prediction
         predicted_class = int(np.argmax(mean_prediction))
         predicted_class_name = CLASS_NAMES[predicted_class]
         
