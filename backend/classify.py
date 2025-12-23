@@ -7,7 +7,7 @@ import io
 # Path to the trained model
 MODEL_PATH = os.path.join(
     os.path.dirname(os.path.dirname(__file__)),
-    "bcnn", "DenseNet(70:30)", "models", "best_bayesian_densenet.h5"
+    "bcnn", "DenseNet(70:30)", "models", "bayesian_densenet_final.h5"
 )
 
 # Class labels (MUST match training order!)
@@ -72,12 +72,14 @@ def preprocess_image(image_bytes):
         # Convert to numpy array
         img_array = np.array(img, dtype=np.float32)
         
-        # ✅ Use DenseNet preprocess_input (handles scaling and normalization)
-        # Note: preprocess_input expects value range [0, 255]
-        img_array = preprocess_input(img_array)
+        # ✅ Normalize to [0, 1] (Match training: rescale=1./255)
+        img_array = img_array / 255.0
         
         # Add batch dimension
         img_array = np.expand_dims(img_array, axis=0)
+        
+        # 🔍 Debug: Print image stats
+        print(f"   Image stats: min={img_array.min():.4f}, max={img_array.max():.4f}, mean={img_array.mean():.4f}")
         
         return img_array
     
@@ -102,23 +104,30 @@ def predict_with_uncertainty(image_bytes, n_iterations=30):
         # Preprocess image
         img_array = preprocess_image(image_bytes)
         
-        # ✅ Perform Monte Carlo Dropout (30 forward passes)
-        print(f"🔄 Running {n_iterations} MC Dropout iterations...")
-        predictions = []
+        # ✅ Perform Standard Prediction first (to verify model works)
+        print(f"🔄 Running standard prediction (training=False)...")
+        # Standard predict uses training=False, so BN layers use moving stats (safe)
+        standard_pred = model.predict(img_array, verbose=0)[0]
+        print(f"   Standard Pred: {standard_pred}")
+        print(f"   Max Conf: {np.max(standard_pred):.4f} ({CLASS_NAMES[np.argmax(standard_pred)]})")
         
+        # Temporary: Use standard prediction repeated to simulate "no uncertainty" 
+        # just to prove the model works
+        mean_prediction = standard_pred
+        std_prediction = np.zeros_like(standard_pred) # No uncertainty for now
+        
+        # SKIP MC DROPOUT FOR NOW TO DIAGNOSE
+        """
+        predictions = []
         for i in range(n_iterations):
-            # ✅ KUNCI: training=True enables dropout during inference
+            # training=True breaks BN with batch_size=1
             pred = model(img_array, training=True)
             predictions.append(pred.numpy())
         
-        # Stack predictions and compute Bayesian statistics
-        predictions = np.array(predictions)  # Shape: (n_iterations, 1, 5)
-        
-        # ✅ Mean prediction across all iterations (Bayesian posterior mean)
+        predictions = np.array(predictions)
         mean_prediction = np.mean(predictions, axis=0)[0]
-        
-        # ✅ Standard deviation (aleatoric + epistemic uncertainty)
         std_prediction = np.std(predictions, axis=0)[0]
+        """
         
         # Get predicted class
         predicted_class = int(np.argmax(mean_prediction))
