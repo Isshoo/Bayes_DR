@@ -77,9 +77,16 @@ export default function ClassifyPage() {
       }
 
       // ✅ Validate file type
-      const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/bmp'];
+      const validTypes = [
+        'image/png',
+        'image/jpeg',
+        'image/jpg',
+        'image/bmp',
+        'image/webp',
+        'image/svg+xml',
+      ];
       if (!validTypes.includes(file.type)) {
-        setError(`Format file tidak didukung. Gunakan PNG, JPG, atau BMP.`);
+        setError(`Format file tidak didukung. Gunakan PNG, JPG, JPEG, BMP, WEBP, atau SVG.`);
         return;
       }
 

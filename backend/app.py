@@ -72,7 +72,7 @@ def classify():
             }), 400
         
         # ✅ Check file extension
-        allowed_extensions = {"png", "jpg", "jpeg", "bmp", "tiff"}
+        allowed_extensions = {"png", "jpg", "jpeg", "bmp", "tiff", "webp", "svg"}
         file_ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
         
         if file_ext not in allowed_extensions:
