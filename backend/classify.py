@@ -7,7 +7,7 @@ import io
 # Path to the trained model
 MODEL_PATH = os.path.join(
     os.path.dirname(os.path.dirname(__file__)),
-    "bcnn", "DenseNet(70:30)", "models", "bayesian_densenet_final.h5"
+    "bcnn", "DenseNet(70:30)", "models", "bayesian_densenet_v2.h5"
 )
 
 # Class labels (MUST match training order!)
@@ -86,7 +86,7 @@ def preprocess_image(image_bytes):
     except Exception as e:
         raise ValueError(f"Error preprocessing image: {str(e)}")
 
-def predict_with_uncertainty(image_bytes, n_iterations=30):
+def predict_with_uncertainty(image_bytes, n_iterations=50):
     """
     Make prediction with Monte Carlo Dropout for uncertainty estimation.
     

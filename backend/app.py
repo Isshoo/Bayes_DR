@@ -117,7 +117,7 @@ def classify():
         
         # ✅ Get prediction with uncertainty (30 MC iterations)
         print("🔄 Starting prediction...")
-        result = predict_with_uncertainty(image_bytes, n_iterations=30)
+        result = predict_with_uncertainty(image_bytes, n_iterations=50)
         
         # ✅ Add explanation
         explanation = get_prediction_explanation(result)

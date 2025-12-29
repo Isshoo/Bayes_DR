@@ -1,59 +1,58 @@
-"use client";
+'use client';
 
-import { useState, useRef } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { useState, useRef } from 'react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import Image from 'next/image';
 
 const DR_CLASSES = [
   {
-    name: "No_DR",
-    label: "No DR",
-    color: "bg-emerald-500",
-    textColor: "text-emerald-500",
-    bgColor: "bg-emerald-50",
-    borderColor: "border-emerald-500",
-    description:
-      "Tidak ada tanda Diabetic Retinopathy terdeteksi. Retina dalam kondisi sehat.",
+    name: 'No_DR',
+    label: 'No DR',
+    color: 'bg-emerald-500',
+    textColor: 'text-emerald-500',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-500',
+    description: 'Tidak ada tanda Diabetic Retinopathy terdeteksi. Retina dalam kondisi sehat.',
   },
   {
-    name: "Mild",
-    label: "Mild",
-    color: "bg-yellow-500",
-    textColor: "text-yellow-600",
-    bgColor: "bg-yellow-50",
-    borderColor: "border-yellow-500",
+    name: 'Mild',
+    label: 'Mild',
+    color: 'bg-yellow-500',
+    textColor: 'text-yellow-600',
+    bgColor: 'bg-yellow-50',
+    borderColor: 'border-yellow-500',
     description:
-      "Tahap awal dengan microaneurysms. Disarankan untuk pemeriksaan rutin setiap 12 bulan.",
+      'Tahap awal dengan microaneurysms. Disarankan untuk pemeriksaan rutin setiap 12 bulan.',
   },
   {
-    name: "Moderate",
-    label: "Moderate",
-    color: "bg-orange-500",
-    textColor: "text-orange-500",
-    bgColor: "bg-orange-50",
-    borderColor: "border-orange-500",
+    name: 'Moderate',
+    label: 'Moderate',
+    color: 'bg-orange-500',
+    textColor: 'text-orange-500',
+    bgColor: 'bg-orange-50',
+    borderColor: 'border-orange-500',
     description:
-      "Tahap menengah. Perlu pemantauan lebih intensif dan konsultasi dengan dokter mata.",
+      'Tahap menengah. Perlu pemantauan lebih intensif dan konsultasi dengan dokter mata.',
   },
   {
-    name: "Severe",
-    label: "Severe",
-    color: "bg-red-500",
-    textColor: "text-red-500",
-    bgColor: "bg-red-50",
-    borderColor: "border-red-500",
+    name: 'Severe',
+    label: 'Severe',
+    color: 'bg-red-500',
+    textColor: 'text-red-500',
+    bgColor: 'bg-red-50',
+    borderColor: 'border-red-500',
     description:
-      "Tahap lanjut. Segera konsultasikan dengan dokter mata spesialis untuk penanganan.",
+      'Tahap lanjut. Segera konsultasikan dengan dokter mata spesialis untuk penanganan.',
   },
   {
-    name: "Proliferate_DR",
-    label: "Proliferate DR",
-    color: "bg-red-800",
-    textColor: "text-red-800",
-    bgColor: "bg-red-50",
-    borderColor: "border-red-800",
-    description:
-      "Tahap paling parah. Memerlukan penanganan medis segera untuk mencegah kebutaan.",
+    name: 'Proliferate_DR',
+    label: 'Proliferate DR',
+    color: 'bg-red-800',
+    textColor: 'text-red-800',
+    bgColor: 'bg-red-50',
+    borderColor: 'border-red-800',
+    description: 'Tahap paling parah. Memerlukan penanganan medis segera untuk mencegah kebutaan.',
   },
 ];
 
@@ -72,15 +71,13 @@ export default function ClassifyPage() {
       const maxSize = 10 * 1024 * 1024; // 10MB
       if (file.size > maxSize) {
         setError(
-          `File terlalu besar (${(file.size / (1024 * 1024)).toFixed(
-            2
-          )}MB). Maksimal 10MB.`
+          `File terlalu besar (${(file.size / (1024 * 1024)).toFixed(2)}MB). Maksimal 10MB.`
         );
         return;
       }
 
       // ✅ Validate file type
-      const validTypes = ["image/png", "image/jpeg", "image/jpg", "image/bmp"];
+      const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/bmp'];
       if (!validTypes.includes(file.type)) {
         setError(`Format file tidak didukung. Gunakan PNG, JPG, atau BMP.`);
         return;
@@ -97,14 +94,12 @@ export default function ClassifyPage() {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
 
-    if (file && file.type.startsWith("image/")) {
+    if (file && file.type.startsWith('image/')) {
       // ✅ Validate file size
       const maxSize = 10 * 1024 * 1024; // 10MB
       if (file.size > maxSize) {
         setError(
-          `File terlalu besar (${(file.size / (1024 * 1024)).toFixed(
-            2
-          )}MB). Maksimal 10MB.`
+          `File terlalu besar (${(file.size / (1024 * 1024)).toFixed(2)}MB). Maksimal 10MB.`
         );
         return;
       }
@@ -114,7 +109,7 @@ export default function ClassifyPage() {
       setResult(null);
       setError(null);
     } else {
-      setError("Format file tidak valid. Upload gambar (PNG, JPG, BMP).");
+      setError('Format file tidak valid. Upload gambar (PNG, JPG, BMP).');
     }
   };
 
@@ -130,15 +125,15 @@ export default function ClassifyPage() {
     setResult(null);
 
     const formData = new FormData();
-    formData.append("image", selectedImage); // ✅ Key: "image" (match backend)
+    formData.append('image', selectedImage); // ✅ Key: "image" (match backend)
 
     try {
-      console.log("📤 Sending request to backend...");
+      console.log('📤 Sending request to backend...');
       console.log(`   File: ${selectedImage.name}`);
       console.log(`   Size: ${(selectedImage.size / 1024).toFixed(2)} KB`);
 
-      const response = await fetch("http://localhost:5500/api/classify", {
-        method: "POST",
+      const response = await fetch('http://localhost:5500/api/classify', {
+        method: 'POST',
         body: formData,
       });
 
@@ -150,31 +145,26 @@ export default function ClassifyPage() {
       // ✅ Check if response is successful
       if (!response.ok) {
         // Backend returned error
-        throw new Error(
-          data.message || data.error || "Terjadi kesalahan saat klasifikasi"
-        );
+        throw new Error(data.message || data.error || 'Terjadi kesalahan saat klasifikasi');
       }
 
       // ✅ Check if prediction was successful
       if (!data.success) {
-        throw new Error(data.message || "Klasifikasi gagal");
+        throw new Error(data.message || 'Klasifikasi gagal');
       }
 
-      console.log("✅ Prediction successful:", data);
+      console.log('✅ Prediction successful:', data);
       setResult(data);
     } catch (err) {
-      console.error("❌ Classification error:", err);
+      console.error('❌ Classification error:', err);
 
       // ✅ Better error messages
-      if (
-        err.message.includes("Failed to fetch") ||
-        err.message.includes("NetworkError")
-      ) {
+      if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
         setError(
-          "Tidak dapat terhubung ke server. Pastikan backend berjalan di http://localhost:5500"
+          'Tidak dapat terhubung ke server. Pastikan backend berjalan di http://localhost:5500'
         );
       } else {
-        setError(err.message || "Gagal melakukan klasifikasi");
+        setError(err.message || 'Gagal melakukan klasifikasi');
       }
     } finally {
       setIsLoading(false);
@@ -187,7 +177,7 @@ export default function ClassifyPage() {
     setResult(null);
     setError(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   };
 
@@ -208,15 +198,15 @@ export default function ClassifyPage() {
               Klasifikasi Diabetic Retinopathy
             </h1>
             <p className="text-slate-600 text-lg max-w-xl mx-auto leading-relaxed">
-              Upload gambar fundus mata untuk mendapatkan hasil analisis dengan
-              confidence score dan uncertainty estimation.
+              Upload gambar fundus mata untuk mendapatkan hasil analisis dengan confidence score dan
+              uncertainty estimation.
             </p>
           </div>
 
           {/* Upload Section */}
           <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 mb-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-linear-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -232,12 +222,8 @@ export default function ClassifyPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-900">
-                  Upload Gambar Fundus
-                </h2>
-                <p className="text-sm text-slate-500">
-                  Pilih atau drag & drop gambar retina
-                </p>
+                <h2 className="text-lg font-bold text-slate-900">Upload Gambar Fundus</h2>
+                <p className="text-sm text-slate-500">Pilih atau drag & drop gambar retina</p>
               </div>
             </div>
 
@@ -248,8 +234,8 @@ export default function ClassifyPage() {
               onDragOver={handleDragOver}
               className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
                 imagePreview
-                  ? "border-teal-500 bg-teal-50/50"
-                  : "border-slate-300 bg-slate-50 hover:border-teal-400 hover:bg-teal-50/30"
+                  ? 'border-teal-500 bg-teal-50/50'
+                  : 'border-slate-300 bg-slate-50 hover:border-teal-400 hover:bg-teal-50/30'
               }`}
             >
               <input
@@ -262,19 +248,20 @@ export default function ClassifyPage() {
 
               {imagePreview ? (
                 <div>
-                  <img
+                  <Image
                     src={imagePreview}
                     alt="Preview"
+                    width={224}
+                    height={224}
                     className="max-h-72 max-w-full mx-auto rounded-xl shadow-lg"
                   />
                   <p className="text-sm text-teal-600 mt-4 font-medium">
-                    ✓ {selectedImage?.name} (
-                    {(selectedImage?.size / 1024).toFixed(0)} KB)
+                    ✓ {selectedImage?.name} ({(selectedImage?.size / 1024).toFixed(0)} KB)
                   </p>
                 </div>
               ) : (
                 <div>
-                  <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-teal-50 to-teal-100 flex items-center justify-center mb-5">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-linear-to-br from-teal-50 to-teal-100 flex items-center justify-center mb-5">
                     <svg
                       className="w-8 h-8 text-teal-600"
                       fill="none"
@@ -292,9 +279,7 @@ export default function ClassifyPage() {
                   <p className="text-slate-900 font-semibold text-base mb-2">
                     Klik atau drag & drop gambar di sini
                   </p>
-                  <p className="text-sm text-slate-500">
-                    Format: PNG, JPG, JPEG (maks. 10MB)
-                  </p>
+                  <p className="text-sm text-slate-500">Format: PNG, JPG, JPEG (maks. 10MB)</p>
                 </div>
               )}
             </div>
@@ -306,8 +291,8 @@ export default function ClassifyPage() {
                 disabled={!selectedImage || isLoading}
                 className={`flex-1 flex items-center justify-center gap-2.5 py-4 px-6 rounded-xl font-bold text-base transition-all ${
                   !selectedImage || isLoading
-                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/30 hover:shadow-xl"
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-linear-to-r from-teal-500 to-cyan-500 text-white shadow-lg shadow-teal-500/30 hover:shadow-xl'
                 }`}
               >
                 {isLoading ? (
@@ -317,12 +302,7 @@ export default function ClassifyPage() {
                   </>
                 ) : (
                   <>
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -339,7 +319,7 @@ export default function ClassifyPage() {
                   onClick={handleReset}
                   disabled={isLoading}
                   className={`py-4 px-6 rounded-xl font-semibold text-base border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all ${
-                    isLoading ? "cursor-not-allowed opacity-50" : ""
+                    isLoading ? 'cursor-not-allowed opacity-50' : ''
                   }`}
                 >
                   Reset
@@ -351,7 +331,7 @@ export default function ClassifyPage() {
             {error && (
               <div className="mt-5 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-3">
                 <svg
-                  className="w-5 h-5 flex-shrink-0"
+                  className="w-5 h-5 shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -372,7 +352,7 @@ export default function ClassifyPage() {
           {(isLoading || result) && (
             <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-xl bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                   <svg
                     className="w-5 h-5 text-white"
                     fill="none"
@@ -388,23 +368,17 @@ export default function ClassifyPage() {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">
-                    Hasil Analisis
-                  </h2>
-                  <p className="text-sm text-slate-500">
-                    Klasifikasi Diabetic Retinopathy
-                  </p>
+                  <h2 className="text-lg font-bold text-slate-900">Hasil Analisis</h2>
+                  <p className="text-sm text-slate-500">Klasifikasi Diabetic Retinopathy</p>
                 </div>
               </div>
 
               {isLoading && (
                 <div className="flex flex-col items-center justify-center py-12">
                   <div className="w-14 h-14 border-4 border-slate-200 border-t-teal-500 rounded-full animate-spin mb-5"></div>
-                  <p className="text-slate-900 font-semibold">
-                    Menganalisis gambar...
-                  </p>
+                  <p className="text-slate-900 font-semibold">Menganalisis gambar...</p>
                   <p className="text-slate-500 text-sm">
-                    Menjalankan 30 iterasi Monte Carlo Dropout
+                    Menjalankan 50 iterasi Monte Carlo Dropout
                   </p>
                 </div>
               )}
@@ -415,9 +389,11 @@ export default function ClassifyPage() {
                   <div className="flex gap-5 items-center">
                     {imagePreview && (
                       <div className="p-3 bg-slate-100 rounded-2xl">
-                        <img
+                        <Image
                           src={imagePreview}
                           alt="Analyzed"
+                          width={112}
+                          height={112}
                           className="w-28 h-28 object-cover rounded-xl shadow-md"
                         />
                       </div>
@@ -427,19 +403,13 @@ export default function ClassifyPage() {
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-slate-500 font-medium mb-1">
-                            Hasil Prediksi
-                          </p>
-                          <p
-                            className={`text-3xl font-extrabold ${currentClass.textColor}`}
-                          >
+                          <p className="text-sm text-slate-500 font-medium mb-1">Hasil Prediksi</p>
+                          <p className={`text-3xl font-extrabold ${currentClass.textColor}`}>
                             {currentClass.label}
                           </p>
                         </div>
                         <div className="text-center bg-white px-5 py-3 rounded-xl shadow-sm">
-                          <p className="text-xs text-slate-500 font-medium mb-0.5">
-                            Confidence
-                          </p>
+                          <p className="text-xs text-slate-500 font-medium mb-0.5">Confidence</p>
                           <p className="text-2xl font-extrabold text-slate-900">
                             {(result.confidence * 100).toFixed(1)}%
                           </p>
@@ -462,8 +432,8 @@ export default function ClassifyPage() {
                     <div
                       className={`p-4 rounded-xl ${
                         result.reliable_prediction
-                          ? "bg-green-50 border border-green-200"
-                          : "bg-yellow-50 border border-yellow-200"
+                          ? 'bg-green-50 border border-green-200'
+                          : 'bg-yellow-50 border border-yellow-200'
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -511,18 +481,16 @@ export default function ClassifyPage() {
                   )}
 
                   {/* Uncertainty */}
-                  <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+                  <div className="p-4 bg-linear-to-r from-blue-50 to-indigo-50 rounded-xl">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-sm text-blue-700 font-semibold">
-                          Uncertainty (σ)
-                        </span>
+                        <span className="text-sm text-blue-700 font-semibold">Uncertainty (σ)</span>
                         <p className="text-xs text-slate-500 mt-1">
-                          Level: {result.uncertainty_level || "N/A"}
+                          Level: {result.uncertainty_level || 'N/A'}
                         </p>
                       </div>
                       <span className="text-2xl font-extrabold text-blue-700">
-                        {result.uncertainty?.toFixed(4) || "N/A"}
+                        {result.uncertainty?.toFixed(4) || 'N/A'}
                       </span>
                     </div>
                   </div>
@@ -536,9 +504,7 @@ export default function ClassifyPage() {
                       {result.probabilities?.map((prob, idx) => (
                         <div key={idx}>
                           <div className="flex items-center justify-between text-sm mb-1.5">
-                            <span
-                              className={`font-semibold ${DR_CLASSES[idx].textColor}`}
-                            >
+                            <span className={`font-semibold ${DR_CLASSES[idx].textColor}`}>
                               {DR_CLASSES[idx].label}
                             </span>
                             <span className="text-slate-600 font-semibold">

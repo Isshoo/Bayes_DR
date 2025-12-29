@@ -1,6 +1,6 @@
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Link from 'next/link';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 export default function Home() {
   return (
@@ -8,10 +8,10 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-45 pb-27 bg-gradient-to-br from-teal-600 via-teal-500 to-cyan-500 relative overflow-hidden">
+      <section className="pt-45 pb-27 bg-linear-to-br from-teal-600 via-teal-500 to-cyan-500 relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute -top-1/2 -right-[10%] w-[600px] h-[600px] rounded-full bg-white/5 pointer-events-none"></div>
-        <div className="absolute -bottom-[30%] -left-[5%] w-[400px] h-[400px] rounded-full bg-white/[0.03] pointer-events-none"></div>
+        <div className="absolute -bottom-[30%] -left-[5%] w-[400px] h-[400px] rounded-full bg-white/3 pointer-events-none"></div>
 
         <div className="max-w-6xl mx-auto px-6 relative">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -23,17 +23,16 @@ export default function Home() {
               </div>
 
               <h1 className="text-5xl lg:text-[52px] font-extrabold mb-6 leading-tight text-white tracking-tight">
-                Deteksi{" "}
-                <span className="bg-gradient-to-r from-cyan-200 to-teal-200 bg-clip-text text-transparent">
+                Deteksi{' '}
+                <span className="bg-linear-to-r from-cyan-200 to-teal-200 bg-clip-text text-transparent">
                   Diabetic Retinopathy
-                </span>{" "}
+                </span>{' '}
                 dengan AI
               </h1>
 
               <p className="text-lg text-white/85 mb-9 leading-relaxed max-w-lg">
-                Upload gambar fundus mata dan dapatkan hasil klasifikasi tingkat
-                keparahan dengan confidence score dan uncertainty estimation
-                yang akurat.
+                Upload gambar fundus mata dan dapatkan hasil klasifikasi tingkat keparahan dengan
+                confidence score dan uncertainty estimation yang akurat.
               </p>
 
               <div className="flex gap-4 flex-wrap">
@@ -41,12 +40,7 @@ export default function Home() {
                   href="/classify"
                   className="inline-flex items-center justify-center gap-2.5 bg-white text-teal-700 font-bold px-8 py-4 rounded-xl no-underline shadow-xl shadow-black/15 hover:shadow-2xl hover:bg-teal-50 transition-all text-base"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -61,12 +55,7 @@ export default function Home() {
                   className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm text-white font-semibold px-8 py-4 rounded-xl no-underline border-2 border-white/25 hover:bg-white/20 transition-all text-base"
                 >
                   Pelajari Lebih Lanjut
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -81,10 +70,10 @@ export default function Home() {
             {/* Right - Eye Illustration */}
             <div className="flex justify-center lg:justify-end">
               <div className="relative">
-                <div className="w-80 h-80 lg:w-[340px] lg:h-[340px] rounded-full bg-white/[0.08] flex items-center justify-center border border-white/15">
-                  <div className="w-64 lg:w-[260px] h-64 lg:h-[260px] rounded-full bg-gradient-to-br from-amber-100 via-amber-500 to-amber-900 flex items-center justify-center shadow-2xl">
+                <div className="w-80 h-80 lg:w-[340px] lg:h-[340px] rounded-full bg-white/8 flex items-center justify-center border border-white/15">
+                  <div className="w-64 lg:w-[260px] h-64 lg:h-[260px] rounded-full bg-linear-to-br from-amber-100 via-amber-500 to-amber-900 flex items-center justify-center shadow-2xl">
                     <div className="w-24 lg:w-[100px] h-24 lg:h-[100px] rounded-full bg-stone-900 flex items-center justify-center shadow-inner">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/90 to-white/30 -translate-x-3 -translate-y-3"></div>
+                      <div className="w-7 h-7 rounded-full bg-linear-to-br from-white/90 to-white/30 -translate-x-3 -translate-y-3"></div>
                     </div>
                   </div>
                 </div>
@@ -102,22 +91,16 @@ export default function Home() {
           <div className="flex justify-center items-center gap-12 flex-wrap">
             <div className="text-center">
               <span className="text-3xl font-extrabold text-teal-600">5</span>
-              <span className="text-sm text-slate-500 ml-2">
-                Tingkat Klasifikasi
-              </span>
+              <span className="text-sm text-slate-500 ml-2">Tingkat Klasifikasi</span>
             </div>
             <div className="w-px h-8 bg-slate-200 hidden sm:block"></div>
             <div className="text-center">
-              <span className="text-3xl font-extrabold text-teal-600">
-                BCNN
-              </span>
+              <span className="text-3xl font-extrabold text-teal-600">BCNN</span>
               <span className="text-sm text-slate-500 ml-2">Model</span>
             </div>
             <div className="w-px h-8 bg-slate-200 hidden sm:block"></div>
             <div className="text-center">
-              <span className="text-3xl font-extrabold text-teal-600">
-                224px
-              </span>
+              <span className="text-3xl font-extrabold text-teal-600">224px</span>
               <span className="text-sm text-slate-500 ml-2">Input Size</span>
             </div>
             <div className="w-px h-8 bg-slate-200 hidden sm:block"></div>
@@ -140,10 +123,9 @@ export default function Home() {
               Apa itu Diabetic Retinopathy?
             </h2>
             <p className="text-slate-600 text-lg leading-relaxed">
-              Diabetic Retinopathy adalah komplikasi diabetes yang mempengaruhi
-              mata. Kondisi ini disebabkan oleh kerusakan pada pembuluh darah di
-              retina dan dapat menyebabkan kebutaan jika tidak terdeteksi dan
-              ditangani dengan tepat.
+              Diabetic Retinopathy adalah komplikasi diabetes yang mempengaruhi mata. Kondisi ini
+              disebabkan oleh kerusakan pada pembuluh darah di retina dan dapat menyebabkan kebutaan
+              jika tidak terdeteksi dan ditangani dengan tepat.
             </p>
           </div>
 
@@ -204,8 +186,8 @@ export default function Home() {
               Fitur Unggulan BayesDR
             </h2>
             <p className="text-slate-600 text-lg leading-relaxed">
-              Menggunakan teknologi Bayesian CNN untuk memberikan hasil
-              klasifikasi yang akurat dan terukur.
+              Menggunakan teknologi Bayesian CNN untuk memberikan hasil klasifikasi yang akurat dan
+              terukur.
             </p>
           </div>
 
@@ -233,7 +215,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-teal-600 via-teal-500 to-cyan-500 relative overflow-hidden">
+      <section className="py-20 bg-linear-to-br from-teal-600 via-teal-500 to-cyan-500 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50"></div>
         <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -243,19 +225,14 @@ export default function Home() {
             Siap Mencoba BayesDR?
           </h2>
           <p className="text-lg text-white/80 mb-8 leading-relaxed max-w-xl mx-auto">
-            Upload gambar fundus mata Anda dan dapatkan hasil klasifikasi
-            Diabetic Retinopathy sekarang juga.
+            Upload gambar fundus mata Anda dan dapatkan hasil klasifikasi Diabetic Retinopathy
+            sekarang juga.
           </p>
           <Link
             href="/classify"
             className="inline-flex items-center justify-center gap-2.5 bg-white text-teal-700 font-bold text-lg px-10 py-4 rounded-xl no-underline shadow-xl hover:shadow-2xl hover:bg-teal-50 transition-all"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -273,14 +250,7 @@ export default function Home() {
   );
 }
 
-function ClassificationCard({
-  level,
-  color,
-  bgColor,
-  borderColor,
-  description,
-  severity,
-}) {
+function ClassificationCard({ level, color, bgColor, borderColor, description, severity }) {
   return (
     <div
       className={`${bgColor} rounded-2xl p-5 border-2 ${borderColor} text-center transition-all hover:shadow-lg`}
