@@ -14,7 +14,7 @@ print("="*70)
 print("STEP 1: CHECKING MODEL FILE")
 print("="*70)
 
-MODEL_PATH = "../bcnn/DenseNet(70:30)/models/best_bayesian_densenet.h5"  # Adjust path
+MODEL_PATH = "../bcnn/DenseNet(70:30)/models/bayesian_densenet_v2.h5"  # Adjust path
 
 if os.path.exists(MODEL_PATH):
     file_size = os.path.getsize(MODEL_PATH) / (1024 * 1024)  # MB
@@ -28,8 +28,7 @@ if os.path.exists(MODEL_PATH):
 else:
     print(f"❌ Model file NOT found at: {MODEL_PATH}")
     print(f"\n💡 Check these locations:")
-    print(f"   1. models/best_bayesian_densenet.h5")
-    print(f"   2. models/bayesian_densenet_final.h5")
+    print(f"   1. models/bayesian_densenet_v2.h5")
     exit()
 
 # ============================================================================
@@ -50,7 +49,7 @@ try:
     print(f"   Output shape: {model.output_shape}")
     
     # Check if it's DenseNet-based
-    is_densenet = any('densenet' in layer.name.lower() for layer in model.layers)
+    is_densenet = any('dense' in layer.name.lower() for layer in model.layers)
     print(f"   DenseNet-based: {'✅ Yes' if is_densenet else '❌ No'}")
     
     # Check dropout layers
@@ -72,36 +71,6 @@ try:
 except Exception as e:
     print(f"❌ Error loading model: {e}")
     exit()
-
-# ============================================================================
-# 3. TEST WITH RANDOM INPUTS
-# ============================================================================
-print("\n" + "="*70)
-print("STEP 3: TESTING WITH RANDOM INPUTS")
-print("="*70)
-
-# Create random images
-np.random.seed(42)
-test_images = [
-    np.random.rand(1, 224, 224, 3).astype(np.float32) * 0.2,  # Dark
-    np.random.rand(1, 224, 224, 3).astype(np.float32) * 0.5,  # Medium
-    np.random.rand(1, 224, 224, 3).astype(np.float32),        # Bright
-]
-
-CLASS_NAMES = ["No_DR", "Mild", "Moderate", "Severe", "Proliferate_DR"]
-
-print("\n🧪 Testing with 3 random inputs:")
-for i, img in enumerate(test_images):
-    pred = model.predict(img, verbose=0)
-    pred_class = np.argmax(pred[0])
-    print(f"\nTest {i+1}:")
-    print(f"   Predictions: {pred[0]}")
-    print(f"   Predicted class: {pred_class} ({CLASS_NAMES[pred_class]})")
-    print(f"   Max prob: {np.max(pred[0]):.4f}")
-    
-    # Check if all predictions are the same
-    if i > 0 and np.argmax(pred[0]) == 2:  # Always "Moderate" (index 2)
-        print(f"   ⚠️  WARNING: Predicting Moderate again!")
 
 # ============================================================================
 # 4. CHECK MODEL WEIGHTS
@@ -206,7 +175,7 @@ if issues:
     print("      model.fit(..., class_weight=class_weights)")
     print()
     print("   2. Check if you loaded the CORRECT model file")
-    print("      Should be: models/best_bayesian_densenet.h5 (ModelCheckpoint best)")
+    print("      Should be: models/bayesian_densenet_v2.h5 (ModelCheckpoint best)")
     print()
     print("   3. Verify training actually completed and saved")
     print("      Check training history: history.history['val_accuracy']")
