@@ -104,6 +104,12 @@ export default function ClassifyPage() {
         return;
       }
 
+      // ✅ Scroll ke atas dengan smooth
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+
       setSelectedImage(file);
       setImagePreview(URL.createObjectURL(file));
       setResult(null);
@@ -113,6 +119,7 @@ export default function ClassifyPage() {
 
   const handleDrop = (e) => {
     e.preventDefault();
+
     const file = e.dataTransfer.files[0];
 
     if (file && file.type.startsWith('image/')) {
@@ -124,6 +131,12 @@ export default function ClassifyPage() {
         );
         return;
       }
+
+      // ✅ Scroll ke atas dengan smooth
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
 
       setSelectedImage(file);
       setImagePreview(URL.createObjectURL(file));
