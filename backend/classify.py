@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from tensorflow import keras
+import tensorflow as tf
 from PIL import Image
 import io
 
@@ -34,7 +35,7 @@ def load_model():
             # Load model without compilation first
             _model = keras.models.load_model(MODEL_PATH, compile=False)
             
-            # ✅ PENTING: Compile ulang dengan optimizer yang sama seperti training
+            # ✅ Compile with same optimizer as training
             _model.compile(
                 optimizer=keras.optimizers.Adam(learning_rate=1e-4),
                 loss='categorical_crossentropy',
@@ -54,11 +55,9 @@ def load_model():
 def preprocess_image(image_bytes):
     """
     Preprocess the uploaded image for model prediction.
-    Using DenseNet specific preprocessing.
+    Using normalization that matches training (rescale=1./255).
     """
     try:
-        from tensorflow.keras.applications.densenet import preprocess_input
-        
         # Open image from bytes
         img = Image.open(io.BytesIO(image_bytes))
         
@@ -66,7 +65,7 @@ def preprocess_image(image_bytes):
         if img.mode != "RGB":
             img = img.convert("RGB")
         
-        # Resize to 224x224
+        # Resize to 224x224 (DenseNet input size)
         img = img.resize((224, 224), Image.Resampling.LANCZOS)
         
         # Convert to numpy array
@@ -78,7 +77,7 @@ def preprocess_image(image_bytes):
         # Add batch dimension
         img_array = np.expand_dims(img_array, axis=0)
         
-        # 🔍 Debug: Print image stats
+        # Debug: Print image stats
         print(f"   Image stats: min={img_array.min():.4f}, max={img_array.max():.4f}, mean={img_array.mean():.4f}")
         
         return img_array
@@ -86,13 +85,98 @@ def preprocess_image(image_bytes):
     except Exception as e:
         raise ValueError(f"Error preprocessing image: {str(e)}")
 
+def mc_dropout_predict(model, img_array, n_iterations=50):
+    """
+    Perform MC Dropout inference with proper BatchNorm handling.
+    
+    CRITICAL FIX:
+    - BatchNorm layers MUST stay in inference mode (use learned stats)
+    - Only Dropout layers should be in training mode
+    
+    This uses a custom training step to control layer behavior precisely.
+    """
+    
+    # ✅ METHOD 1: Using tf.function with custom training flag
+    @tf.function
+    def predict_with_dropout(x):
+        """
+        Custom prediction function that enables dropout but keeps BatchNorm in inference mode.
+        """
+        # Manually iterate through layers
+        for layer in model.layers:
+            if isinstance(layer, keras.layers.Dropout):
+                # Enable dropout
+                x = layer(x, training=True)
+            elif isinstance(layer, keras.layers.BatchNormalization):
+                # Force BatchNorm to inference mode
+                x = layer(x, training=False)
+            elif hasattr(layer, 'layers'):
+                # For nested models (like DenseNet), recursively apply
+                for sublayer in layer.layers:
+                    if isinstance(sublayer, keras.layers.Dropout):
+                        x = sublayer(x, training=True)
+                    elif isinstance(sublayer, keras.layers.BatchNormalization):
+                        x = sublayer(x, training=False)
+                    else:
+                        x = sublayer(x, training=False)
+            else:
+                # Regular layers in inference mode
+                x = layer(x, training=False)
+        return x
+    
+    # This approach is too complex. Let's use the WORKING approach from your original code!
+    
+    # ✅ METHOD 2: Split Inference (YOUR ORIGINAL APPROACH - KEEP IT!)
+    # Extract features using backbone (training=False for BatchNorm)
+    feature_extractor = keras.Model(
+        inputs=model.input, 
+        outputs=model.get_layer('bn_1').output
+    )
+    
+    # Get features with BatchNorm in inference mode
+    features = feature_extractor(img_array, training=False)
+    
+    # Get head layers (Dense + Dropout + Output)
+    head_layers = [
+        model.get_layer('dense_1'),
+        model.get_layer('bayesian_dropout_1'),
+        model.get_layer('dense_2'),
+        model.get_layer('bayesian_dropout_2'),
+        model.get_layer('dense_3'),
+        model.get_layer('bayesian_dropout_3'),
+        model.get_layer('output')
+    ]
+    
+    # Perform MC Dropout iterations
+    mc_predictions = []
+    
+    for i in range(n_iterations):
+        # Start with features
+        x = features
+        
+        # Pass through head layers with dropout enabled
+        for layer in head_layers:
+            if 'dropout' in layer.name:
+                x = layer(x, training=True)  # Enable dropout
+            else:
+                x = layer(x, training=False)  # Regular layers
+        
+        mc_predictions.append(x.numpy()[0])
+    
+    return np.array(mc_predictions)
+
 def predict_with_uncertainty(image_bytes, n_iterations=50):
     """
     Make prediction with Monte Carlo Dropout for uncertainty estimation.
     
+    FIXED VERSION:
+    - Uses split inference to keep BatchNorm in inference mode
+    - Only enables dropout in head layers
+    - This is YOUR ORIGINAL APPROACH - it was CORRECT!
+    
     Args:
         image_bytes: Raw bytes of the uploaded image
-        n_iterations: Number of forward passes for uncertainty estimation (default: 30)
+        n_iterations: Number of forward passes for uncertainty estimation (default: 50)
         
     Returns:
         Dictionary containing prediction results with uncertainty metrics
@@ -104,51 +188,20 @@ def predict_with_uncertainty(image_bytes, n_iterations=50):
         # Preprocess image
         img_array = preprocess_image(image_bytes)
         
-        # ✅ Perform Standard Prediction first
+        # ✅ 1. STANDARD PREDICTION (training=False)
         print(f"🔄 Running standard prediction (training=False)...")
         standard_pred = model.predict(img_array, verbose=0)[0]
         
-        # ✅ MC DROPOUT FIX: SPLIT INFERENCE
-        # The Backbone (DenseNet + BN) MUST run in inference mode (training=False).
-        # The Head (Dense + Dropout) MUST run in training mode (training=True).
-        # We manually feed features through the head layers.
+        print(f"   Standard prediction: {CLASS_NAMES[np.argmax(standard_pred)]} ({np.max(standard_pred):.2%})")
         
+        # ✅ 2. MC DROPOUT - SPLIT INFERENCE (YOUR ORIGINAL APPROACH)
         print(f"🔄 Running MC Dropout via Split Inference (n={n_iterations})...")
         
-        # 1. Extract features using the backbone (up to bn_1)
-        # We create a temporary model or just get the layer output function
-        feature_extractor = keras.Model(inputs=model.input, outputs=model.get_layer('bn_1').output)
-        features = feature_extractor(img_array, training=False) # Shape: (1, 1024)
+        mc_predictions = mc_dropout_predict(model, img_array, n_iterations)
         
-        # 2. Get Head Layers
-        head_layers = [
-            model.get_layer('dense_1'),
-            model.get_layer('bayesian_dropout_1'),
-            model.get_layer('dense_2'),
-            model.get_layer('bayesian_dropout_2'),
-            model.get_layer('dense_3'),
-            model.get_layer('bayesian_dropout_3'),
-            model.get_layer('output')
-        ]
-        
-        # 3. Replicate features for batch processing
-        # Features are constant for all iterations
-        batch_features = np.tile(features, (n_iterations, 1))
-        
-        # 4. Pass through head layers manually
-        x = batch_features
-        for layer in head_layers:
-            if 'dropout' in layer.name:
-                # Enable dropout!
-                x = layer(x, training=True)
-            else:
-                x = layer(x)
-                
-        mc_predictions = x.numpy()
-        
-        # Compute Bayesian statistics
-        mean_prediction = np.mean(mc_predictions, axis=0) # Shape: (5,)
-        std_prediction = np.std(mc_predictions, axis=0)   # Shape: (5,)
+        # ✅ 3. COMPUTE BAYESIAN STATISTICS
+        mean_prediction = np.mean(mc_predictions, axis=0)  # Shape: (5,)
+        std_prediction = np.std(mc_predictions, axis=0)    # Shape: (5,)
         
         # Get predicted class from Mean Prediction
         predicted_class = int(np.argmax(mean_prediction))
@@ -157,8 +210,8 @@ def predict_with_uncertainty(image_bytes, n_iterations=50):
         # Get confidence (probability of predicted class)
         confidence = float(mean_prediction[predicted_class])
         
-        # ✅ Compute uncertainty metrics
-        # 1. Class-specific uncertainty
+        # ✅ 4. COMPUTE UNCERTAINTY METRICS
+        # 1. Class-specific uncertainty (std of predicted class)
         class_uncertainty = float(std_prediction[predicted_class])
         
         # 2. Overall prediction uncertainty (mean std across all classes)
@@ -167,7 +220,7 @@ def predict_with_uncertainty(image_bytes, n_iterations=50):
         # 3. Predictive entropy (measure of total uncertainty)
         predictive_entropy = float(-np.sum(mean_prediction * np.log(mean_prediction + 1e-10)))
         
-        # ✅ Confidence interpretation
+        # ✅ 5. CONFIDENCE & UNCERTAINTY INTERPRETATION
         confidence_level = "High" if confidence >= 0.8 else "Medium" if confidence >= 0.6 else "Low"
         uncertainty_level = "Low" if overall_uncertainty <= 0.05 else "Medium" if overall_uncertainty <= 0.10 else "High"
         
