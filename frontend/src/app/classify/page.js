@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Image from 'next/image';
@@ -63,6 +63,20 @@ export default function ClassifyPage() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
+  const resultSectionRef = useRef(null); // Ref untuk section hasil
+
+  // ✅ Auto-scroll ke hasil ketika result berubah
+  useEffect(() => {
+    if (result && resultSectionRef.current) {
+      // Delay sedikit untuk memastikan DOM sudah terender
+      setTimeout(() => {
+        resultSectionRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 100);
+    }
+  }, [result]);
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -186,6 +200,12 @@ export default function ClassifyPage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+
+    // ✅ Scroll ke atas dengan smooth
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
   };
 
   const currentClass = result ? DR_CLASSES[result.predicted_class] : null;
@@ -357,7 +377,10 @@ export default function ClassifyPage() {
 
           {/* Results Section */}
           {(isLoading || result) && (
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
+            <div
+              ref={resultSectionRef}
+              className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 scroll-mt-28"
+            >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-11 h-11 rounded-xl bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                   <svg
